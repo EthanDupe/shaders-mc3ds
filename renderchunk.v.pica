@@ -35,8 +35,9 @@
     dp4 outpos.w, WORLDVIEWPROJ[3], r0
 
     ; Subtle cave contrast: blend aColor with (aColor * aColor) by 22%
-    mul r1, aColor, aColor
-    mul r2, aColor, c_consts.w
+    mov r2, aColor
+    mul r1, r2, r2
+    mul r2, r2, c_consts.w
     mul r1, r1, c_consts.z
     add r1.xyz, r2.xyz, r1.xyz
     mov r1.w, aColor.w
