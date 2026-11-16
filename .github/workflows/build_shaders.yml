@@ -1,0 +1,23 @@
+name: Build 3DS PICA200 Shaders
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile .v.pica shaders with picasso
+        run: |
+          mkdir -p dist/shaders/3DS
+          /opt/devkitpro/tools/bin/picasso -o dist/shaders/3DS/sky.shbin sky.v.pica
+          /opt/devkitpro/tools/bin/picasso -o dist/shaders/3DS/renderchunk.shbin renderchunk.v.pica
+          /opt/devkitpro/tools/bin/picasso -o dist/shaders/3DS/renderchunk_near_water.shbin renderchunk_near_water.v.pica
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mc3ds-shaders-shbin
+          path: dist/shaders/3DS/*.shbin
