@@ -25,18 +25,19 @@
     dp4 outpos.w, WORLDVIEWPROJ[3], r0
 
     ; Base sky color = aColor * CURRENT_COLOR
-    mul r1, aColor, CURRENT_COLOR
+    mov r1, aColor
+    mul r1, r1, CURRENT_COLOR
 
-    ; Subtle horizon glow near y = 0: factor = clamp(1.0 - abs(y) * 3.5, 0, 1) * 0.28
+    ; Subtle horizon glow near y = 0: factor = clamp(1.0 - abs(y), 0, 1) * 0.28
     mov r2.x, aPosition.y
-    abs r2.x, r2.x
-    mul r2.x, r2.x, myconst.y
+    max r2.x, r2.x, -r2.x
     add r2.x, myconst.y, -r2.x
     max r2.x, myconst.x, r2.x
     mul r2.x, r2.x, myconst.z
 
     ; Blend horizon toward warm-tinted FOG_COLOR
-    mul r3, FOG_COLOR, horizon_tint
+    mov r3, FOG_COLOR
+    mul r3, r3, horizon_tint
     add r3, r3, -r1
     mul r3, r3, r2.xxxx
     add outclr, r1, r3
