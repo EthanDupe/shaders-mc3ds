@@ -1,0 +1,48 @@
+; Upgraded Terrain Chunk Shader (renderchunk.v.pica)
+; Adds deeper cave contrast on low-light vertices while matching renderchunk.shbin registers
+
+.alias aPosition v0
+.alias aColor    v1
+.alias aTexCoord v2
+.alias bTexCoord v3
+
+.fvec WORLDVIEWPROJ[4]
+.fvec WORLDVIEW[4]
+.fvec PROJ[4]
+.fvec FOG_COLOR
+.fvec FOG_CONTROL
+.fvec RENDER_DISTANCE
+.fvec VIEWPORT_DIMENSION
+.fvec CURRENT_COLOR
+.fvec CHUNK_ORIGIN_AND_SCALE
+.fvec VIEW_POS
+.fvec FAR_CHUNKS_DISTANCE
+
+.constf c_consts(0.0, 1.0, 0.22, 0.78)
+
+.out outpos position
+.out outclr color
+.out outtc0 texcoord0
+.out outtc1 texcoord1
+
+.entry main
+.proc main
+    mov r0.xyz, aPosition.xyz
+    mov r0.w, c_consts.y
+    dp4 outpos.x, WORLDVIEWPROJ[0], r0
+    dp4 outpos.y, WORLDVIEWPROJ[1], r0
+    dp4 outpos.z, WORLDVIEWPROJ[2], r0
+    dp4 outpos.w, WORLDVIEWPROJ[3], r0
+
+    ; Subtle cave contrast: blend aColor with (aColor * aColor) by 22%
+    mul r1, aColor, aColor
+    mul r2, aColor, c_consts.w
+    mul r1, r1, c_consts.z
+    add r1.xyz, r2.xyz, r1.xyz
+    mov r1.w, aColor.w
+    mul outclr, r1, CURRENT_COLOR
+
+    mov outtc0, aTexCoord
+    mov outtc1, bTexCoord
+    end
+.end

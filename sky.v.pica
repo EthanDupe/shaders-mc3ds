@@ -1,0 +1,45 @@
+; Upgraded Sky Vertex Shader (sky.v.pica)
+; Matches original sky.shbin registers and outputs
+
+.alias aPosition v0
+.alias aColor    v1
+
+.fvec WORLDVIEWPROJ[4]
+.fvec CURRENT_COLOR
+.fvec FOG_COLOR
+
+.constf myconst(0.0, 1.0, 0.28, 0.15)
+.constf horizon_tint(1.0, 0.86, 0.72, 1.0)
+
+.out outpos position
+.out outclr color
+
+.entry main
+.proc main
+    ; Transform vertex position: outpos = WORLDVIEWPROJ * vec4(aPosition.xyz, 1.0)
+    mov r0.xyz, aPosition.xyz
+    mov r0.w, myconst.y
+    dp4 outpos.x, WORLDVIEWPROJ[0], r0
+    dp4 outpos.y, WORLDVIEWPROJ[1], r0
+    dp4 outpos.z, WORLDVIEWPROJ[2], r0
+    dp4 outpos.w, WORLDVIEWPROJ[3], r0
+
+    ; Base sky color = aColor * CURRENT_COLOR
+    mul r1, aColor, CURRENT_COLOR
+
+    ; Subtle horizon glow near y = 0: factor = clamp(1.0 - abs(y) * 3.5, 0, 1) * 0.28
+    mov r2.x, aPosition.y
+    abs r2.x, r2.x
+    mul r2.x, r2.x, myconst.y
+    add r2.x, myconst.y, -r2.x
+    max r2.x, myconst.x, r2.x
+    mul r2.x, r2.x, myconst.z
+
+    ; Blend horizon toward warm-tinted FOG_COLOR
+    mul r3, FOG_COLOR, horizon_tint
+    add r3, r3, -r1
+    mul r3, r3, r2.xxxx
+    add outclr, r1, r3
+
+    end
+.end
