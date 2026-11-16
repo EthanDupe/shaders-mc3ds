@@ -34,19 +34,20 @@
     dp4 outpos.z, WORLDVIEWPROJ[2], r0
     dp4 outpos.w, WORLDVIEWPROJ[3], r0
 
-    ; Compute approximate view-angle grazing factor from WORLDVIEW z/distance
+    ; Compute approximate view-angle grazing factor from WORLDVIEW y/distance
     dp4 r2.x, WORLDVIEW[0], r0
     dp4 r2.y, WORLDVIEW[1], r0
     dp4 r2.z, WORLDVIEW[2], r0
-    dp3 r3.x, r2, r2
+    dp3 r3.x, r2.xyz, r2.xyz
     rsq r3.x, r3.x
     mul r2.y, r2.y, r3.x
-    abs r2.y, r2.y
+    max r2.y, r2.y, -r2.y
     add r2.x, w_consts.y, -r2.y
     max r2.x, w_consts.x, r2.x
 
     ; Subtle Fresnel boost to alpha and sky-tint brightness
-    mul r1, aColor, CURRENT_COLOR
+    mov r1, aColor
+    mul r1, r1, CURRENT_COLOR
     mul r3.x, r2.x, w_consts.z
     add r1.w, r1.w, r3.x
     min r1.w, r1.w, w_consts.y
